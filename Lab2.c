@@ -1,14 +1,14 @@
 /*====================================================*/
-/* Stephen Fortner and Tivon */
+/* Stephen Fortner and Tivon Evans */
 /* ELEC 3040/3050 - Lab 2, Program 1 */
 /* Cuount up/down depending on specified direction */
 /*====================================================*/
 
 
-#include "STM32L1xx.h" 						//Microcontroller information
+#include "STM32L1xx.h" 					//Microcontroller information
 
 /* Define global variables */
-unsigned char currentCount; 			//number currently displayed
+unsigned char counter; 					//number currently displayed
 
 /*---------------------------------------------------*/
 /* Initialize GPIO pins used in the program */
@@ -18,13 +18,13 @@ unsigned char currentCount; 			//number currently displayed
 
 void PinSetup () {
  /* Configure PA1 and PA2 as input pin to read push button */
- RCC->AHBENR |= 0x01; 						//Enable GPIOA clock (bit 0)
- GPIOA->MODER &= ~(0x0000003c); 	//General purpose input mode
+ RCC->AHBENR |= 0x01; 					//Enable GPIOA clock (bit 0)
+ GPIOA->MODER &= ~(0x0000003c); 			//General purpose input mode
 	
  /* Configure PC[0,3] as output pins to drive LEDs */
- RCC->AHBENR |= 0x04; 						//Enable GPIOC clock (bit 2)
- GPIOC->MODER &= ~(0x000000FF); 	//Clear PC[0,3] mode bits
- GPIOC->MODER |= (0x00000055); 		//General purpose output mode
+ RCC->AHBENR |= 0x04; 					//Enable GPIOC clock (bit 2)
+ GPIOC->MODER &= ~(0x000000FF); 			//Clear PC[0,3] mode bits
+ GPIOC->MODER |= (0x00000055); 				//General purpose output mode
 }
 /*----------------------------------------------------------*/
 /* Delay function - do nothing for about .5 second */
@@ -32,10 +32,10 @@ void PinSetup () {
 
 void delay () {
  int i,j,n;
- for (i=0; i<10; i++) { 		//outer loop
-	for (j=0; j<20000; j++) { //inner loop
-		n = j; 									//dummy operation for single-step test
-	} 												//do nothing
+ for (i=0; i<10; i++) { 				//outer loop
+	for (j=0; j<20000; j++) { 			//inner loop
+		n = j;					//dummy operation for single-step test
+	} 						//do nothing
  }
 }
 
@@ -43,20 +43,18 @@ void delay () {
 /* Count function - increment or decrement according to direction*/
 /*------------------------------------------------*/
 
-void count (unsigned char direction) {
+void count (unsigned char dir) {
 	//if direction = 1 count down or if currently 0 go to 9
-	if (direction == 1){
-		if (currentCount == 0){
-			currentCount = (currentCount + 1) % 10;
-		}
-		else {
-			currentCount = (currentCount +(10 - 1)) % 10;
-		}
+	if (!dir){
+			counter = (counter + 1) % 10;
+	}
+	else {
+			counter = (counter +(10 - 1)) % 10;
 	}
 	
 	//display count information
-	GPIOC ->BSRR |= (~currentCount & 0x0F) << 16; //clear bits
-	GPIOC ->BSRR |= (currentCount & 0x0F);				//write bits
+	GPIOC ->BSRR |= (~counter & 0x0F) << 16; 	//clear bits
+	GPIOC ->BSRR |= (counter & 0x0F);		//write bits
 }
 
 /*------------------------------------------------*/
@@ -64,19 +62,19 @@ void count (unsigned char direction) {
 /*------------------------------------------------*/
 
 int main(void) {
-	unsigned char sw1 = 0; 					//start/stop
-	unsigned char sw2 = 0;					//direction
-
-	PinSetup();					  			//Configure GPIO pins
+	PinSetup();					//Configure GPIO pins
+	
+	unsigned char direction = 0; 			//start/stop
+	unsigned char enable = 0;			//direction
 	
 	/* Endless loop */
 	while (1) {
-		sw1 = GPIOA->IDR & 0x02; 	//Read GPIOA and mask all but bit 1
-		sw2 = GPIOA->IDR & 0x04;	//Read GPIOA and mask all but bit 2
-		if (sw1){
-			count(sw2);
+		enable = GPIOA->IDR & 0x00000002; 	//Read GPIOA and mask all but bit 1
+		direction = GPIOA->IDR & 0x00000004;	//Read GPIOA and mask all but bit 2
+		if (enable != 0){
+			count(direction);
 		}
-		delay(); 									//Time delay for counting
+		delay(); 				//Time delay for counting
 		
- }														/* repeat forever */
+ }	/* repeat forever */
 }
