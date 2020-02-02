@@ -56,10 +56,11 @@ void count (unsigned char dir) {
 	}
 	
 	//display count information
-	unsigned short leds = (counter2 & 0x0F) << 4; // PC[7:4]
-  leds += (counter1 & 0x0F); 										// PC[3:0]
-	SET_BIT(GPIOC->BSRR, (~leds) << 16); 					// clear bits
-  SET_BIT(GPIOC->BSRR, leds); 									// set bits
+	GPIOC->BSRR |= (~counter1 & 0x0F) << 16;	//clear bits
+	GPIOC->BSRR |=(counter1 & 0x0F);	//write bits
+	
+	GPIOC->BSRR |= 0xF0 << 16;	//cleat bits
+	GPIOC->BSRR |= counter2 << 4;		// write bits
 }
 
 /*------------------------------------------------*/
