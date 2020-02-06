@@ -68,7 +68,7 @@ void EXTI0_IRQHandler () {
 /*----------------------------------------------------------*/
 /* interrupt handler*/
 /*----------------------------------------------------------*/
-void EXT1_IRQHandler () {
+void EXTI1_IRQHandler () {
 	EXTI->PR |= 0x0002;
 	counter2direction = 1;
 	LED9 = ~LED9;
